@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mathias Vind's Portfolio Hub</title>
+    <!-- Load Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Custom styles for aesthetic */
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap');
+        body {
+            font-family: 'Inter', sans-serif;
+            scroll-behavior: smooth;
+        }
+        .section-header {
+            position: relative;
+            display: inline-block;
+            margin-bottom: 2rem;
+        }
+        .section-header::after {
+            content: '';
+            position: absolute;
+            bottom: -5px;
+            left: 0;
+            width: 50%;
+            height: 3px;
+            background-color: #3b82f6; /* Blue-500 */
+            border-radius: 9999px;
+        }
+        /* Chart specific styling */
+        .chart-container {
+            height: 18rem; /* 72 units height */
+            position: relative;
+        }
+        .bar {
+            width: 100%;
+            transition: all 0.5s ease-out;
+            position: absolute; /* Allows for growth from the 0% line */
+            border-radius: 0.375rem 0.375rem 0 0; /* rounded top */
+        }
+        .bar-positive {
+            background-color: #10b981; /* secondary - green */
+            bottom: 50%; /* Starts at the 0% line */
+            transform-origin: bottom; /* Scales up from the bottom */
+        }
+        .bar-negative {
+            background-color: #ef4444; /* tertiary - red */
+            top: 50%; /* Starts at the 0% line */
+            transform-origin: top; /* Scales down from the top */
+            border-radius: 0 0 0.375rem 0.375rem; /* rounded bottom */
+        }
+    </style>
+    <script>
+        // Data for the chart: { month, value, isPositive }
+        const monthlyData = [
+            { month: 'Jan', value: 8.72, isPositive: true },
+            { month: 'Feb', value: 3.43, isPositive: true },
+            { month: 'Mar', value: 9.46, isPositive: false },
+            { month: 'Apr', value: 1.63, isPositive: false },
+            { month: 'May', value: 13.16, isPositive: true },
+            { month: 'Jun', value: 7.32, isPositive: true },
+            { month: 'Jul', value: 10.94, isPositive: true },
+            { month: 'Aug', value: 4.93, isPositive: false },
+            { month: 'Sep', value: 5.29, isPositive: true },
+            { month: 'Okt', value: 13.12, isPositive: true },
+            { month: 'Nov', value: 2.20, isPositive: true },
+            { month: 'Dec', value: 0, isPositive: true } // Placeholder for December
+        ];
+
+        // Maximum visual range (used for scaling the bars)
+        const maxRange = 20; // Represents 20% on the chart grid
+
+        function initializeChart() {
+            const container = document.getElementById('chart-bars-container');
+            if (!container) return;
+
+            // Calculate the height of the bar based on the 50% max height
+            const calculateHeight = (value) => {
+                // Scale value relative to maxRange (20) and multiply by 50% (half the chart height)
+                const percentage = (Math.abs(value) / maxRange) * 50;
+                return `${percentage}%`;
+            };
+
+            monthlyData.forEach(data => {
+                // Main container for the bar and label
+                const barWrapper = document.createElement('div');
+                barWrapper.className = 'flex flex-col items-center mx-2 w-6 md:w-8 relative h-full';
+
+                // Bar element
+                const bar = document.createElement('div');
+                bar.className = 'bar';
+                bar.style.height = calculateHeight(data.value);
+
+                // Label element
+                const label = document.createElement('span');
+                label.className = 'text-xs text-gray-400 absolute bottom-[-1.5rem]';
+                label.textContent = data.month;
+
+                // Position and color the bar
+                if (data.isPositive) {
+                    bar.classList.add('bar-positive');
+                } else {
+                    bar.classList.add('bar-negative');
+                }
+
+                // Append elements
+                barWrapper.appendChild(bar);
+                barWrapper.appendChild(label);
+                container.appendChild(barWrapper);
+            });
+        }
+
+        // Mobile menu toggle logic functions (defined globally)
+        function toggleMenu() {
+            const mobileMenu = document.getElementById('mobile-menu');
+            if (mobileMenu) {
+                mobileMenu.classList.toggle('hidden');
+            }
+        }
+
+        function closeMenu() {
+            const mobileMenu = document.getElementById('mobile-menu');
+            if (mobileMenu) {
+                mobileMenu.classList.add('hidden');
+            }
+        }
+        
+        // This function runs once the entire page is loaded
+        window.onload = function() {
+            // Apply Tailwind configuration after the CDN script has loaded
+            tailwind.config = {
+                theme: {
+                    extend: {
+                        colors: {
+                            'primary': '#3b82f6', // Blue-500
+                            'secondary': '#10b981', // Emerald-500 (Used for positive returns)
+                            'tertiary': '#ef4444', // Red-500 (Used for negative returns)
+                        },
+                    }
+                }
+            }
+            
+            // Mobile menu event listeners (now runs after HTML is parsed)
+            const menuButton = document.getElementById('menu-button');
+            if (menuButton) {
+                menuButton.addEventListener('click', toggleMenu);
+            }
+            
+            document.getElementById('current-year').textContent = new Date().getFullYear();
+            initializeChart();
+        };
+    </script>
+</head>
+<body class="bg-gray-900 text-white min-h-screen">
+
+    <!-- Header & Navigation -->
+    <header class="sticky top-0 z-50 bg-gray-900/90 backdrop-blur-sm shadow-lg">
+        <div class="container mx-auto px-4 py-4 flex justify-between items-center">
+            <!-- Updated Name -->
+            <h1 class="text-2xl font-bold text-primary">Mathias Vind</h1>
+            <nav class="hidden md:flex space-x-6 text-lg">
+                <a href="#substack" class="hover:text-primary transition duration-300">Substack</a>
+                <a href="#portfolio" class="hover:text-primary transition duration-300">Portfolio Metrics</a>
+                <!-- Code and Design links removed -->
+            </nav>
+            <button id="menu-button" class="md:hidden text-white p-2 rounded-lg hover:bg-gray-800 transition duration-300">
+                <!-- Hamburger Icon -->
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7"></path></svg>
+            </button>
+        </div>
+    </header>
+
+    <!-- Mobile Menu Overlay -->
+    <div id="mobile-menu" class="hidden md:hidden fixed inset-0 bg-gray-900/95 z-40 flex flex-col items-center justify-center space-y-8">
+        <a href="#substack" class="text-3xl font-medium text-white hover:text-primary transition duration-300" onclick="closeMenu()">Substack</a>
+        <a href="#portfolio" class="text-3xl font-medium text-white hover:text-primary transition duration-300" onclick="closeMenu()">Portfolio Metrics</a>
+        <button class="absolute top-8 right-8 text-white p-2" onclick="closeMenu()">
+            <!-- Close Icon -->
+            <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+        </button>
+    </div>
+
+    <main class="container mx-auto px-4 py-12">
+        
+        <!-- Hero Section -->
+        <section class="text-center mb-24">
+            <div class="w-24 h-24 mx-auto mb-6 bg-primary rounded-full flex items-center justify-center text-4xl font-extrabold text-white shadow-xl">
+                MV
+            </div>
+            <h2 class="text-5xl md:text-6xl font-extrabold mb-4 leading-tight">
+                Mathias Vind: Investor & Writer
+            </h2>
+            <p class="text-xl text-gray-400 max-w-3xl mx-auto">
+                Tracking market movements, building capital, and sharing weekly insights through my newsletter.
+            </p>
+        </section>
+
+        <!-- Substack Section -->
+        <section id="substack" class="mb-20 pt-16">
+            <h3 class="text-4xl font-bold text-white section-header">Substack: The Weekly Insight</h3>
+            <div class="mt-8 bg-gray-800 p-8 rounded-xl shadow-2xl border border-gray-700 hover:border-primary transition duration-500">
+                <div class="md:flex md:space-x-8 items-center">
+                    <div class="mb-6 md:mb-0 md:w-2/3">
+                        <h4 class="text-3xl font-semibold mb-3">Dive Deeper Into Market Trends & Tech Philosophy</h4>
+                        <p class="text-gray-400 mb-6 text-lg">
+                            My Substack, **"The Alpha Loop,"** is where I break down complex financial models, analyze market shifts, and explore the philosophical side of modern software development. New post every Sunday.
+                        </p>
+                        <a href="https://yoursubstacklink.com" target="_blank" class="inline-flex items-center bg-primary hover:bg-blue-600 text-white font-semibold py-3 px-6 rounded-lg transition duration-300 shadow-lg shadow-primary/30">
+                            Read the Latest Post 
+                            <svg class="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
+                        </a>
+                    </div>
+                    <!-- Mock Substack Icon/Image -->
+                    <div class="md:w-1/3 flex justify-center">
+                        <span class="text-8xl p-4 bg-gray-700 rounded-full inline-block">📰</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Portfolio Performance Section -->
+        <section id="portfolio" class="mb-20 pt-16">
+            <h3 class="text-4xl font-bold text-white section-header">Portfolio Performance: Risk and Return (YTD)</h3>
+            <div class="mt-8 grid md:grid-cols-2 gap-6 max-w-xl mx-auto">
+                
+                <!-- Metric 1: YTD Return (56.15%) -->
+                <div class="bg-gray-800 p-6 rounded-xl shadow-xl border border-gray-700">
+                    <p class="text-gray-400 uppercase text-sm font-semibold mb-1">YTD Return</p>
+                    <p class="text-4xl font-bold text-secondary">+56.15%</p>
+                    <p class="text-sm text-gray-500 mt-1">Year-to-date performance</p>
+                </div>
+
+                <!-- Metric 2: Sharpe Ratio (1.9) -->
+                <div class="bg-gray-800 p-6 rounded-xl shadow-xl border border-gray-700">
+                    <p class="text-gray-400 uppercase text-sm font-semibold mb-1">Sharpe Ratio</p>
+                    <p class="text-4xl font-bold text-white">1.9</p>
+                    <p class="text-sm text-gray-500 mt-1">Risk-adjusted return (Higher is better)</p>
+                </div>
+
+            </div>
+            
+            <!-- Monthly Return Bar Chart -->
+            <div class="mt-12 bg-gray-800 p-6 rounded-xl shadow-2xl border border-gray-700">
+                <h4 class="text-2xl font-semibold mb-4">Monthly Percentage Returns (2025)</h4>
+                <div class="overflow-x-auto pb-8">
+                    <!-- Chart container: h-72 is 18rem. 50% is 9rem (the 0% line) -->
+                    <div class="chart-container w-[50rem] md:w-full pt-4 relative">
+                        
+                        <!-- Chart Gridlines and Labels -->
+                        <div class="absolute inset-0">
+                            <!-- Y-axis lines and labels (from -20% to +20%) -->
+                            <div class="absolute w-full h-px bg-gray-500/50 top-1/2 transform -translate-y-1/2 text-gray-500 text-xs flex items-center justify-end pr-2">0%</div>
+
+                            <!-- Positive lines (Top 50%) -->
+                            <div class="absolute w-full border-t border-gray-700 text-gray-500 text-xs flex items-center justify-end pr-2" style="top: 0%">20%</div>
+                            <div class="absolute w-full border-t border-gray-700 text-gray-500 text-xs flex items-center justify-end pr-2" style="top: 12.5%">15%</div>
+                            <div class="absolute w-full border-t border-gray-700 text-gray-500 text-xs flex items-center justify-end pr-2" style="top: 25%">10%</div>
+                            <div class="absolute w-full border-t border-gray-700 text-gray-500 text-xs flex items-center justify-end pr-2" style="top: 37.5%">5%</div>
+
+                            <!-- Negative lines (Bottom 50%) -->
+                            <div class="absolute w-full border-t border-gray-700 text-gray-500 text-xs flex items-center justify-end pr-2" style="top: 62.5%">-5%</div>
+                            <div class="absolute w-full border-t border-gray-700 text-gray-500 text-xs flex items-center justify-end pr-2" style="top: 75%">-10%</div>
+                            <div class="absolute w-full border-t border-gray-700 text-gray-500 text-xs flex items-center justify-end pr-2" style="top: 87.5%">-15%</div>
+                            <div class="absolute w-full border-t border-gray-700 text-gray-500 text-xs flex items-center justify-end pr-2" style="top: 100%">-20%</div>
+                        </div>
+
+                        <!-- Chart Bars (Dynamically populated by JavaScript) -->
+                        <div id="chart-bars-container" class="flex h-full w-full justify-evenly relative z-10">
+                            <!-- JS will inject the bars here -->
+                        </div>
+                    </div>
+                </div>
+                <p class="text-sm text-gray-500 mt-6 text-center">Monthly percentage returns from January to November 2025.</p>
+            </div>
+
+        </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-gray-800 mt-12 py-8">
+        <div class="container mx-auto px-4 text-center text-gray-400">
+            <p>&copy; <span id="current-year"></span> Mathias Vind. All rights reserved.</p>
+            <div class="flex justify-center space-x-6 mt-4">
+                <a href="#" class="hover:text-primary transition duration-300">Email</a>
+                <a href="https://linkedin.com/in/yourprofile" target="_blank" class="hover:text-primary transition duration-300">LinkedIn</a>
+                <a href="https://github.com/yourprofile" target="_blank" class="hover:text-primary transition duration-300">GitHub</a>
+            </div>
+        </div>
+    </footer>
+
+</body>
+</html>
